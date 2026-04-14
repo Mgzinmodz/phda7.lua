@@ -132,6 +132,7 @@ _G.Aimbot = false
 _G.ShowFOV = false
 _G.FOV_Size = 300
 _G.ESP_Box = false
+_G.ESP_Line = false
 _G.MenuVisible = true
 
 local Y = 55
@@ -192,6 +193,7 @@ end
 -- ==============================================
 CreateOption("Aimbot", "Aimbot", "🎯")
 CreateOption("Exibir círculo FOV", "ShowFOV", "⚪")
+CreateOption("ESP LINE", "ESP_Line", "🔴")
 CreateOption("ESP Caixa", "ESP_Box", "🟩")
 
 -- ==============================================
@@ -243,7 +245,7 @@ RunService.RenderStepped:Connect(function()
     FOVCircle.Size = UDim2.new(0, _G.FOV_Size, 0, _G.FOV_Size)
     FOVCircle.Position = UDim2.new(0.5, -_G.FOV_Size/2, 0.5, -_G.FOV_Size/2)
     
-    -- AIMBOT COM VERIFICAÇÃO COMPLETA
+    -- AIMBOT
     if _G.Aimbot and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
         local Closest = nil
         local MaxDistance = 200
@@ -265,13 +267,14 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ==============================================
--- // ESP CAIXA (SEGURO E VÊ ATRÁS DE PAREDE)
+-- // ESP CAIXA E LINHA (TUDO CERTINHO)
 -- ==============================================
 local function CreateESP(player)
     if player == Player then return end
     
     local esp = {
-        Box = nil
+        Box = nil,
+        Line = nil
     }
     
     -- CAIXA VERDE
@@ -284,6 +287,16 @@ local function CreateESP(player)
     esp.Box.ZIndex = 10
     esp.Box.Color3 = Color3.new(0, 1, 0)
     
+    -- LINHA VERMELHA
+    esp.Line = Instance.new("LineHandleAdornment")
+    esp.Line.Name = "ESP_Line_"..player.Name
+    esp.Line.Parent = Workspace
+    esp.Line.Thickness = 2
+    esp.Line.Transparency = 1
+    esp.Line.AlwaysOnTop = true
+    esp.Line.ZIndex = 10
+    esp.Line.Color3 = Color3.new(1, 0, 0)
+    
     ESPObjects[player] = esp
 end
 
@@ -295,16 +308,23 @@ local function UpdateESP()
             end
             
             local char = player.Character
-            if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0 then
+            if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Head") and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0 then
                 local hrp = char.HumanoidRootPart
+                local head = char.Head
                 
-                -- CAIXA NO CORPO
+                -- CAIXA
                 ESPObjects[player].Box.Size = Vector3.new(2, 3, 1)
                 ESPObjects[player].Box.CFrame = hrp.CFrame * CFrame.new(0, 1.5, 0)
                 ESPObjects[player].Box.Visible = _G.ESP_Box
+                
+                -- LINHA
+                ESPObjects[player].Line.From = Camera.CFrame.Position
+                ESPObjects[player].Line.To = head.Position
+                ESPObjects[player].Line.Visible = _G.ESP_Line
             else
                 if ESPObjects[player] then
                     ESPObjects[player].Box.Visible = false
+                    ESPObjects[player].Line.Visible = false
                 end
             end
         end
@@ -312,12 +332,15 @@ local function UpdateESP()
 end
 
 -- ==============================================
--- // LIMPEZA QUANDO PLAYER SAI (ANTI LAG)
+-- // LIMPEZA AUTOMATICA
 -- ==============================================
 Players.PlayerRemoving:Connect(function(player)
     if ESPObjects[player] then
         if ESPObjects[player].Box then
             ESPObjects[player].Box:Destroy()
+        end
+        if ESPObjects[player].Line then
+            ESPObjects[player].Line:Destroy()
         end
         ESPObjects[player] = nil
     end
