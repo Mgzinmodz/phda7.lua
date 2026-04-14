@@ -11,7 +11,7 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 -- // GUI PRINCIPAL
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "MGCHEATS_ARENA"
-ScreenGui.Parent = PlayerGui -- ARRUMADO: PlayerGui
+ScreenGui.Parent = PlayerGui
 ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Global
 ScreenGui.ResetOnSpawn = false
 ScreenGui.DisplayOrder = 999999
@@ -57,7 +57,7 @@ FOVCircle.Visible = false
 -- BORDA BRANCA
 local Border = Instance.new("UIStroke")
 Border.Thickness = 2
-Border.Color = Color3.new(1, 1, 1) -- BRANCO PURO
+Border.Color = Color3.new(1, 1, 1)
 Border.Parent = FOVCircle
 
 local Corner = Instance.new("UICorner")
@@ -132,7 +132,6 @@ _G.Aimbot = false
 _G.ShowFOV = false
 _G.FOV_Size = 300
 _G.ESP_Box = false
-_G.ESP_Line = false
 _G.MenuVisible = true
 
 local Y = 55
@@ -189,11 +188,10 @@ local function CreateOption(Name, VarName, Emoji)
 end
 
 -- ==============================================
--- // OPÇÕES EXATAS
+-- // OPÇÕES
 -- ==============================================
 CreateOption("Aimbot", "Aimbot", "🎯")
 CreateOption("Exibir círculo FOV", "ShowFOV", "⚪")
-CreateOption("ESP LINE", "ESP_Line", "🔴")
 CreateOption("ESP Caixa", "ESP_Box", "🟩")
 
 -- ==============================================
@@ -212,7 +210,7 @@ BtnMinimize.MouseButton1Click:Connect(function()
 end)
 
 -- ==============================================
--- // SISTEMA 3 DEDOS (ARRUMADO CERTINHO)
+-- // SISTEMA 3 DEDOS (CERTO)
 -- ==============================================
 local touches = {}
 
@@ -237,7 +235,7 @@ UserInputService.TouchEnded:Connect(function(input)
 end)
 
 -- ==============================================
--- // AIMBOT E FOV
+-- // AIMBOT (PROTEÇÃO TOTAL)
 -- ==============================================
 RunService.RenderStepped:Connect(function()
     -- FOV BRANCO
@@ -245,7 +243,7 @@ RunService.RenderStepped:Connect(function()
     FOVCircle.Size = UDim2.new(0, _G.FOV_Size, 0, _G.FOV_Size)
     FOVCircle.Position = UDim2.new(0.5, -_G.FOV_Size/2, 0.5, -_G.FOV_Size/2)
     
-    -- AIMBOT COM PROTEÇÃO
+    -- AIMBOT COM VERIFICAÇÃO COMPLETA
     if _G.Aimbot and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
         local Closest = nil
         local MaxDistance = 200
@@ -267,16 +265,16 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ==============================================
--- // ESP CAIXA E LINHA (COM PROTEÇÃO)
+-- // ESP CAIXA (SEGURO E VÊ ATRÁS DE PAREDE)
 -- ==============================================
 local function CreateESP(player)
     if player == Player then return end
     
     local esp = {
-        Box = nil,
-        Line = nil
+        Box = nil
     }
     
+    -- CAIXA VERDE
     esp.Box = Instance.new("BoxHandleAdornment")
     esp.Box.Name = "ESP_Box_"..player.Name
     esp.Box.Parent = Workspace
@@ -285,15 +283,6 @@ local function CreateESP(player)
     esp.Box.AlwaysOnTop = true
     esp.Box.ZIndex = 10
     esp.Box.Color3 = Color3.new(0, 1, 0)
-    
-    esp.Line = Instance.new("LineHandleAdornment")
-    esp.Line.Name = "ESP_Line_"..player.Name
-    esp.Line.Parent = Workspace
-    esp.Line.Thickness = 2
-    esp.Line.Transparency = 1
-    esp.Line.AlwaysOnTop = true
-    esp.Line.ZIndex = 10
-    esp.Line.Color3 = Color3.new(1, 0, 0)
     
     ESPObjects[player] = esp
 end
@@ -306,24 +295,33 @@ local function UpdateESP()
             end
             
             local char = player.Character
-            if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Head") and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0 then
+            if char and char:FindFirstChild("HumanoidRootPart") and char:FindFirstChild("Humanoid") and char.Humanoid.Health > 0 then
                 local hrp = char.HumanoidRootPart
-                local head = char.Head
                 
+                -- CAIXA NO CORPO
                 ESPObjects[player].Box.Size = Vector3.new(2, 3, 1)
                 ESPObjects[player].Box.CFrame = hrp.CFrame * CFrame.new(0, 1.5, 0)
                 ESPObjects[player].Box.Visible = _G.ESP_Box
-                
-                ESPObjects[player].Line.From = Camera.CFrame.Position
-                ESPObjects[player].Line.To = head.Position
-                ESPObjects[player].Line.Visible = _G.ESP_Line
             else
-                ESPObjects[player].Box.Visible = false
-                ESPObjects[player].Line.Visible = false
+                if ESPObjects[player] then
+                    ESPObjects[player].Box.Visible = false
+                end
             end
         end
     end
 end
+
+-- ==============================================
+-- // LIMPEZA QUANDO PLAYER SAI (ANTI LAG)
+-- ==============================================
+Players.PlayerRemoving:Connect(function(player)
+    if ESPObjects[player] then
+        if ESPObjects[player].Box then
+            ESPObjects[player].Box:Destroy()
+        end
+        ESPObjects[player] = nil
+    end
+end)
 
 RunService.Heartbeat:Connect(UpdateESP)
 
