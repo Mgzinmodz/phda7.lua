@@ -267,7 +267,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ==============================================
--- // ESP CAIXA E LINHA (TUDO CERTINHO)
+-- // ESP CAIXA E LINHA (EXATAMENTE COMO NA FOTO)
 -- ==============================================
 local function CreateESP(player)
     if player == Player then return end
@@ -277,23 +277,23 @@ local function CreateESP(player)
         Line = nil
     }
     
-    -- CAIXA VERDE
+    -- CAIXA VERDE EM VOLTA DO CORPO
     esp.Box = Instance.new("BoxHandleAdornment")
     esp.Box.Name = "ESP_Box_"..player.Name
     esp.Box.Parent = Workspace
     esp.Box.Thickness = 2
     esp.Box.Transparency = 1
-    esp.Box.AlwaysOnTop = true
+    esp.Box.AlwaysOnTop = true -- VÊ ATRÁS DE PAREDE
     esp.Box.ZIndex = 10
     esp.Box.Color3 = Color3.new(0, 1, 0)
     
-    -- LINHA VERMELHA
+    -- LINHA VERMELHA DA CAMERA ATÉ A CABEÇA
     esp.Line = Instance.new("LineHandleAdornment")
     esp.Line.Name = "ESP_Line_"..player.Name
     esp.Line.Parent = Workspace
     esp.Line.Thickness = 2
     esp.Line.Transparency = 1
-    esp.Line.AlwaysOnTop = true
+    esp.Line.AlwaysOnTop = true -- VÊ ATRÁS DE PAREDE
     esp.Line.ZIndex = 10
     esp.Line.Color3 = Color3.new(1, 0, 0)
     
@@ -312,12 +312,12 @@ local function UpdateESP()
                 local hrp = char.HumanoidRootPart
                 local head = char.Head
                 
-                -- CAIXA
+                -- CAIXA NO TAMANHO CERTO
                 ESPObjects[player].Box.Size = Vector3.new(2, 3, 1)
                 ESPObjects[player].Box.CFrame = hrp.CFrame * CFrame.new(0, 1.5, 0)
                 ESPObjects[player].Box.Visible = _G.ESP_Box
                 
-                -- LINHA
+                -- LINHA RETA ATÉ A CABEÇA
                 ESPObjects[player].Line.From = Camera.CFrame.Position
                 ESPObjects[player].Line.To = head.Position
                 ESPObjects[player].Line.Visible = _G.ESP_Line
@@ -332,7 +332,7 @@ local function UpdateESP()
 end
 
 -- ==============================================
--- // LIMPEZA AUTOMATICA
+-- // LIMPEZA AUTOMATICA QUANDO PLAYER SAI
 -- ==============================================
 Players.PlayerRemoving:Connect(function(player)
     if ESPObjects[player] then
